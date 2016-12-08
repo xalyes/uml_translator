@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "structures.h"
+#include "packaged_element.h"
 
 using boost::property_tree::ptree;  
 using namespace std;
@@ -32,11 +33,11 @@ public:
 		return pt;
 	};
 
-	void display(void)
+	/*void display(void)
 	{
 		//display(0, pt);
 		print_tree(pt, 0);
-	};
+	};*/
 
 private:  
 	ptree import_xml(const string& filename) 
@@ -54,7 +55,7 @@ private:
 
 	std::string q(const std::string& s) { return "\"" + s + "\""; }
 
-	void fillAttribute(const ptree& pt, structures::Class& newClass)
+	/*void fillAttribute(const ptree& pt, structures::Class& newClass)
 	{
 		structures::Properties props;
 		string name = pt.get<string>("<xmlattr>.name");
@@ -62,9 +63,9 @@ private:
 		props.m_visibility = pt.get<string>("<xmlattr>.visibility");
 
 		newClass.m_members.insert(std::make_pair<string, structures::Properties>(name, props));
-	}
+	}*/
 
-	void fillFunction(const ptree& pt, structures::Class& newClass)
+	/*void fillFunction(const ptree& pt, structures::Class& newClass)
 	{
 		static string type;
 		structures::Function func;
@@ -79,9 +80,9 @@ private:
 		func.m_type = type;
 		func.m_params = props;
 		newClass.m_functions.push_back(func);
-	}
+	}*/
 
-	string fillParameters(const ptree& pt, unordered_map<string, structures::Properties>& props)
+	/*string fillParameters(const ptree& pt, unordered_map<string, structures::Properties>& props)
 	{
 		string return_type;
 		BOOST_FOREACH(const ptree::value_type &v, pt) 
@@ -96,16 +97,16 @@ private:
 				props.insert(make_pair<string, structures::Properties>(name, prop));
 		}
 		return return_type;
-	}
+	}*/
 
-	void fillParameter(const ptree& pt, string& name, string& kind, string& type)
+	/*void fillParameter(const ptree& pt, string& name, string& kind, string& type)
 	{
 		name = pt.get<string>("name");
 		kind = pt.get<string>("kind");
 		type = pt.get<string>("type");
-	}
+	}*/
 
-	void fillClass(const ptree& pt, structures::Class& newClass)
+	/*void fillClass(const ptree& pt, structures::Class& newClass)
 	{
 		newClass.m_id = pt.get<string>(ptree::path_type("<xmlattr>/xmi.id", '/'));
 		newClass.m_name = pt.get<string>("<xmlattr>.name");
@@ -118,12 +119,12 @@ private:
 				fillFunction(v.second, newClass);
 		}
 
-	}
+	}*/
 
-	void print_tree(const ptree& pt, int level)
+	/*void print_tree(const ptree& pt, int level)
 	{
 		const std::string sep(2 * level, ' ');
-		BOOST_FOREACH(const ptree::value_type &v, pt) 
+		BOOST_FOREACH(const ptree::value_type &v, pt)
 		{
 			if (v.first == "UML:Class")
 			{
@@ -135,9 +136,9 @@ private:
 				<< q(v.first) << " : " << q(v.second.data()) << "\n";
 			print_tree(v.second, level + 1);
 		}
-	}
+	}*/
 
-	void display(const int depth, const ptree& tree)
+	/*void display(const int depth, const ptree& tree)
 	{
 		BOOST_FOREACH( ptree::value_type const&v, tree.get_child("") )
 		{
@@ -153,20 +154,45 @@ private:
 				display(depth+1,subtree);
 			//}
 		}
-	};  
-};  
+	}*/
+};
 
-#define DEFAULT_CALORIES 0  
-   
+#define DEFAULT_CALORIES 0
+
+Visibility GetVisibility(const std::string& visibility)
+{
+	if (visibility == "public")
+		return Public;
+	else if (visibility == "private")
+		return Private;
+	else if (visibility == "protected")
+		return Protected;
+	else
+		throw(new std::runtime_error("Bad visibility"));
+}
+
+PackagedElement FillPackage(const ptree& pt)
+{
+	const std::string Id = pt.get<std::string>("packagedElement.<xmlattr>.xmi:id");
+	std::cout << "Id: " << Id << std::endl;
+	const std::string StrType = pt.get<std::string>("packagedElement.<xmlattr>.xmi:type");
+	std::cout << "Type: " << StrType << std::endl;
+	const std::string StrVisibility = pt.get<std::string>("packagedElement.<xmlattr>.visibility");
+	std::cout << "Visibility: " << StrVisibility << std::endl;
+	const std::string Name = pt.get<std::string>("packagedElement.<xmlattr>.name");
+	std::cout << "Name: " << Name << std::endl;
+
+	const PackagedElementTypeClass Type(StrType);
+
+	const Visibility Visibl = GetVisibility(StrVisibility);
+
+	return PackagedElement(Id, Type, Visibl, Name);
+}
+
 int main(void)  
-{  
-	configuration cfg("Untitled.xml");  
-	cfg.display();  
-	//cfg.save("test_output.xml");  
-	  
-	// example to grab data from property tree  
-	int calories = cfg.property_tree().get<int>("collection.recipe.nutrition.<xmlattr>.calories",DEFAULT_CALORIES);  
-	cout << "Calories = " << calories << endl;  
-	 
+{
+	configuration cfg("fact.xml");  
+	const PackagedElement Package = FillPackage(cfg.property_tree().get_child("xmi:XMI.uml:Model"));
+
 	return 0; 
-}  
+}
