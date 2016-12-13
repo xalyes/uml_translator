@@ -86,7 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="edge.h" />
-    <ClInclude Include="element.h" />
+    <ClInclude Include="interfaces.h" />
     <ClInclude Include="id.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="package.h" />

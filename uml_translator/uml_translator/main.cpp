@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "structures.h"
 #include "packaged_element.h"
+#include "node.h"
+#include "edge.h"
 
 using boost::property_tree::ptree;  
 using namespace std;
@@ -34,7 +36,7 @@ public:
 	};
 
 	/*void display(void)
-	{
+	{7
 		//display(0, pt);
 		print_tree(pt, 0);
 	};*/
@@ -173,26 +175,132 @@ Visibility GetVisibility(const std::string& visibility)
 
 PackagedElement FillPackage(const ptree& pt)
 {
-	const std::string Id = pt.get<std::string>("packagedElement.<xmlattr>.xmi:id");
+	const std::string Id = pt.get<std::string>("<xmlattr>.xmi:id");
 	std::cout << "Id: " << Id << std::endl;
-	const std::string StrType = pt.get<std::string>("packagedElement.<xmlattr>.xmi:type");
+	const std::string StrType = pt.get<std::string>("<xmlattr>.xmi:type");
 	std::cout << "Type: " << StrType << std::endl;
-	const std::string StrVisibility = pt.get<std::string>("packagedElement.<xmlattr>.visibility");
+	const std::string StrVisibility = pt.get<std::string>("<xmlattr>.visibility");
 	std::cout << "Visibility: " << StrVisibility << std::endl;
-	const std::string Name = pt.get<std::string>("packagedElement.<xmlattr>.name");
+	const std::string Name = pt.get<std::string>("<xmlattr>.name");
 	std::cout << "Name: " << Name << std::endl;
 
 	const PackagedElementTypeClass Type(StrType);
 
-	const Visibility Visibl = GetVisibility(StrVisibility);
+	const Visibility visibility = GetVisibility(StrVisibility);
+	std::cout << "==============================================" << std::endl;
+	return PackagedElement(Id, Type, visibility, Name);
+}
 
-	return PackagedElement(Id, Type, Visibl, Name);
+Node FillNode(const ptree& pt)
+{
+	const std::string Id = pt.get<std::string>("<xmlattr>.xmi:id");
+	std::cout << "Id: " << Id << std::endl;
+	const std::string StrType = pt.get<std::string>("<xmlattr>.xmi:type");
+	std::cout << "Type: " << StrType << std::endl;
+	const std::string StrVisibility = pt.get<std::string>("<xmlattr>.visibility");
+	std::cout << "Visibility: " << StrVisibility << std::endl;
+
+	const NodeType Type(StrType);
+
+	const Visibility visibility = GetVisibility(StrVisibility);
+	std::cout << "==============================================" << std::endl;
+
+	Node node(Id, Type, visibility);
+
+	BOOST_FOREACH(const ptree::value_type& elem, pt.get_child(""))
+	{
+		if (elem.first != "<xmlattr>")
+		{
+			if (elem.first == "incoming")
+				node.AddChild(Incoming(elem.second.get<std::string>("<xmlattr>.xmi:idref")));
+			else if (elem.first == "outgoing")
+				node.AddChild(Outgoing(elem.second.get<std::string>("<xmlattr>.xmi:idref")));
+			else if (elem.first == "effect")
+			{
+				const std::string StrType = elem.second.get<std::string>("<xmlattr>.xmi:type");
+				const std::string Id = elem.second.get<std::string>("<xmlattr>.xmi:id");
+				const std::string Body = elem.second.get<std::string>("<xmlattr>.body");
+				node.AddChild(Effect(Id, EffectType(StrType), Body));
+			}
+			else
+				throw(new std::runtime_error("Element " + elem.first + " is not supported. Please call me (no)"));
+		}
+	}
+
+	return node;
+}
+
+Edge FillEdge(const ptree& pt)
+{
+	const std::string Id = pt.get<std::string>("<xmlattr>.xmi:id");
+	std::cout << "Id: " << Id << std::endl;
+	const std::string StrType = pt.get<std::string>("<xmlattr>.xmi:type");
+	std::cout << "Type: " << StrType << std::endl;
+	const std::string StrVisibility = pt.get<std::string>("<xmlattr>.visibility");
+	std::cout << "Visibility: " << StrVisibility << std::endl;
+	const std::string Source = pt.get<std::string>("<xmlattr>.source");
+	std::cout << "source: " << Source << std::endl;
+	const std::string Target = pt.get<std::string>("<xmlattr>.target");
+	std::cout << "source: " << Target << std::endl;
+
+	const EdgeType Type(StrType);
+
+	const Visibility visibility = GetVisibility(StrVisibility);
+	std::cout << "==============================================" << std::endl;
+
+	Edge edge = Edge(Id, Type, visibility, Source, Target);
+
+	const boost::optional<std::string> GuardId = pt.get_optional<std::string>("guard.xmi:id");
+	if (GuardId.is_initialized())
+		std::cout << "GuardId: " << GuardId << std::endl;
+
+	const boost::optional<std::string> Body = pt.get_optional<std::string>("guard.body");
+	if (Body.is_initialized())
+		std::cout << "Body: " << Body << std::endl;
+
+	const boost::optional<std::string> GuardStrType = pt.get_optional<std::string>("guard.xmi:type");
+	if (GuardStrType.is_initialized())
+	{
+		std::cout << "GuardType: " << GuardStrType << std::endl;
+		const GuardType guardType(GuardStrType.get());
+		edge.AddChild(Guard(GuardId.get(), guardType, Body.get()));
+	}
+
+	return edge;
 }
 
 int main(void)  
 {
-	configuration cfg("fact.xml");  
-	const PackagedElement Package = FillPackage(cfg.property_tree().get_child("xmi:XMI.uml:Model"));
+	configuration cfg("fact.xml");
+	
+	boost::property_tree::ptree PackageTree = cfg.property_tree().get_child("xmi:XMI.uml:Model.packagedElement");
+	PackagedElement Package = FillPackage(PackageTree);
+
+	// iterate all diagram
+	BOOST_FOREACH(const ptree::value_type& diagramTree, PackageTree.get_child(""))
+	{
+		if (diagramTree.first != "<xmlattr>")
+		{
+			PackagedElement diagram = FillPackage(diagramTree.second);
+
+			// iterate nodes or edges
+			BOOST_FOREACH(const ptree::value_type& elem, diagramTree.second.get_child(""))
+			{
+				if (elem.first != "<xmlattr>")
+				{
+					std::cout << elem.first << std::endl;
+					if (elem.first == "node")
+						diagram.AddChild(FillNode(elem.second));
+					else if (elem.first == "edge")
+						diagram.AddChild(FillEdge(elem.second));
+					else
+						throw(new std::runtime_error("Element " + elem.first + " is not supported. Please call me (no)"));
+				}
+			}
+
+			Package.AddChild(diagram);
+		}
+	}
 
 	return 0; 
 }

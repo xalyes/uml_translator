@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 
-#include "element.h"
+#include "interfaces.h"
 
 class PackagedElementTypeClass : public IType
 {
@@ -28,11 +28,11 @@ public:
 	}
 };
 
-class PackagedElement : public IElement
+class PackagedElement : public INumerableElement, public ITypedElement, public IVisibleElement
 {
 public:
 	PackagedElement(const std::string& id, const PackagedElementTypeClass& type, Visibility visibility, const std::string& name)
-		: IElement(id, type, visibility), m_name(name)
+		: INumerableElement(id), ITypedElement(type), IVisibleElement(visibility), m_name(name)
 	{}
 
 private:

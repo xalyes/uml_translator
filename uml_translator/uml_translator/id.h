@@ -2,12 +2,22 @@
 #include <string>
 #include <map>
 
+typedef std::map<std::string, unsigned long> IdMapType;
+
 class IdMap
 {
 public:
-	static void Insert(const std::string& id, unsigned long localId)
+	static const IdMapType::value_type& Insert(const std::string& id)
 	{
-		m_ids.insert(std::make_pair(id, localId));
+		auto it = m_ids.find(id);
+		if (it == m_ids.end())
+		{
+			return *(m_ids.insert(std::make_pair(id, m_counter++)).first);
+		}
+		else
+		{
+			return *it;
+		}
 	}
 
 	static unsigned long GetLocalId(const std::string& id)
@@ -16,32 +26,31 @@ public:
 	}
 
 private:
-	static std::map<std::string, unsigned long> m_ids;
+	IdMap() {}
+
+	static IdMapType m_ids;
+	static unsigned long m_counter;
 };
 
-std::map<std::string, unsigned long> IdMap::m_ids;
+IdMapType IdMap::m_ids;
+unsigned long IdMap::m_counter = 0;
 
 class Id
 {
 public:
-	Id(const std::string& id) : m_id(id)
-	{
-		static unsigned long counter = 0;
-		m_localId = counter++;
-		IdMap::Insert(id, counter++);
-	}
+	Id(const std::string& id) : m_valuePair(IdMap::Insert(id))
+	{}
 
 	unsigned long GetLocalId()
 	{
-		return m_localId;
+		return m_valuePair.second;
 	}
 
 	const std::string& GetId()
 	{
-		return m_id;
+		return m_valuePair.first;
 	}
 
 private:
-	const std::string m_id;
-	unsigned long m_localId;
+	const IdMapType::value_type& m_valuePair;
 };

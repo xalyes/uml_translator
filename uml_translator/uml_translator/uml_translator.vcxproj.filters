@@ -32,9 +32,6 @@
     <ClInclude Include="packaged_element.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="element.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="id.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
@@ -42,6 +39,9 @@
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="edge.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
