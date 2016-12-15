@@ -9,10 +9,27 @@ enum Visibility
 	Private
 };
 
+static std::string VisibilityStrings[] =
+{
+	"Public",
+	"Protected",
+	"Private"
+};
+
+std::string GetVisibilityString(Visibility vsbl)
+{
+	return "Visibility: " + VisibilityStrings[vsbl] + "\n";
+}
+
 class IType
 {
 public:
 	IType() {};
+
+	virtual std::string ToString() const
+	{
+		return "";
+	};
 };
 
 class IElement
@@ -20,10 +37,17 @@ class IElement
 public:
 	IElement() {}
 
-	void AddChild(const IElement& elem)
+	void AddChild(const std::shared_ptr<IElement> elem)
 	{
-		m_childs.push_back(std::make_shared<IElement>(elem));
+		m_childs.push_back(elem);
 	}
+
+	const std::vector<std::shared_ptr<IElement> > GetChilds() const
+	{
+		return m_childs;
+	}
+
+	virtual const std::string ToString() const = 0;
 
 private:
 	std::vector<std::shared_ptr<IElement> > m_childs;
@@ -32,12 +56,12 @@ private:
 class ITypedElement : public virtual IElement
 {
 public:
-	ITypedElement(const IType& type)
+	ITypedElement(const std::shared_ptr<IType> type)
 		: m_type(type)
 	{}
 
 protected:
-	const IType m_type;
+	const std::shared_ptr<IType> m_type;
 };
 
 class INumerableElement : public virtual IElement

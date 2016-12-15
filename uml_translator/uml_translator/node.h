@@ -27,14 +27,37 @@ public:
 		else
 			throw(new std::runtime_error("Bad xmi:type of Node"));
 	}
+
+	std::string ToString() const
+	{
+		if (m_type == DecisionNode)
+			return "xmi:type=\"uml:DecisionNode\"\n";
+		else if (m_type == ActivityFinalNode)
+			return "xmi:type=\"uml:ActivityFinalNode\"\n";
+		else if (m_type == InitialNode)
+			return "xmi:type=\"uml:InitialNode\"\n";
+		else if (m_type == Action)
+			return "xmi:type=\"uml:Action\"\n";
+		else
+			return "";
+	}
 };
 
 class Node : public INumerableElement, public ITypedElement, public IVisibleElement
 {
 public:
 	Node(const std::string& id, const NodeType& type, Visibility visibility)
-		: INumerableElement(id), ITypedElement(type), IVisibleElement(visibility)
+		: INumerableElement(id), ITypedElement(std::make_shared<NodeType>(type)), IVisibleElement(visibility)
 	{}
+
+	const std::string ToString() const
+	{
+		return
+			"Node:\n"
+			"\t" + m_type->ToString() +
+			"\t" + m_id.ToString() +
+			"\t" + GetVisibilityString(m_visibility);
+	}
 };
 
 class Incoming : public IElement
@@ -42,6 +65,13 @@ class Incoming : public IElement
 public:
 	Incoming(const std::string& id) : m_ref(id)
 	{}
+
+	const std::string ToString() const
+	{
+		return
+			"Incoming:\n"
+			"\t" + m_ref.ToString();
+	}
 
 private:
 	const Id m_ref;
@@ -52,6 +82,13 @@ class Outgoing : public IElement
 public:
 	Outgoing(const std::string& id) : m_ref(id)
 	{}
+
+	const std::string ToString() const
+	{
+		return
+			"Outgoing:\n"
+			"\t" + m_ref.ToString();
+	}
 
 private:
 	const Id m_ref;
@@ -73,15 +110,32 @@ public:
 		else
 			throw(new std::runtime_error("Bad xmi:type of Effect"));
 	}
+
+	std::string ToString() const
+	{
+		if (m_type == OpaqueBehavior)
+			return "xmi:type=\"uml:OpaqueBehavior\"\n";
+		else
+			return "";
+	}
 };
 
 class Effect : public INumerableElement, public ITypedElement
 {
 public:
 	Effect(const std::string& id, EffectType type, const std::string& body)
-		: INumerableElement(id), ITypedElement(type), m_body(body)
+		: INumerableElement(id), ITypedElement(std::make_shared<IType>(type)), m_body(body)
 	{}
 
-public:
+	const std::string ToString() const
+	{
+		return
+			"Effect:\n"
+			"\t" + m_type->ToString() +
+			"\t" + m_id.ToString() +
+			"\t" + m_body;
+	}
+
+private:
 	const std::string m_body;
 };

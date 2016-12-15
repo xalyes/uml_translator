@@ -41,14 +41,21 @@ public:
 	Id(const std::string& id) : m_valuePair(IdMap::Insert(id))
 	{}
 
-	unsigned long GetLocalId()
+	unsigned long GetLocalId() const
 	{
 		return m_valuePair.second;
 	}
 
-	const std::string& GetId()
+	const std::string& GetId() const
 	{
 		return m_valuePair.first;
+	}
+
+	std::string ToString() const
+	{
+		return
+			"xmi:id=\"" + m_valuePair.first + "\"; " +
+			"localId=" + std::to_string(m_valuePair.second) + "\n";
 	}
 
 private:
