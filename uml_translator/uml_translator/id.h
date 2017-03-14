@@ -32,9 +32,6 @@ private:
 	static unsigned long m_counter;
 };
 
-IdMapType IdMap::m_ids;
-unsigned long IdMap::m_counter = 0;
-
 class Id
 {
 public:

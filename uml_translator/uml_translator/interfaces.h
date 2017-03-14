@@ -2,26 +2,9 @@
 #include "id.h"
 #include <string>
 
-enum Visibility
-{
-	Public,
-	Protected,
-	Private
-};
+/*std::string GetVisibilityString(VisibilityType vsbl);*/
 
-static std::string VisibilityStrings[] =
-{
-	"Public",
-	"Protected",
-	"Private"
-};
-
-std::string GetVisibilityString(Visibility vsbl)
-{
-	return "Visibility: " + VisibilityStrings[vsbl] + "\n";
-}
-
-class IType
+/*class IType
 {
 public:
 	IType() {};
@@ -30,7 +13,7 @@ public:
 	{
 		return "";
 	};
-};
+};*/
 
 class IElement
 {
@@ -53,7 +36,7 @@ private:
 	std::vector<std::shared_ptr<IElement> > m_childs;
 };
 
-class ITypedElement : public virtual IElement
+/*class ITypedElement : public virtual IElement
 {
 public:
 	ITypedElement(const std::shared_ptr<IType> type)
@@ -62,7 +45,7 @@ public:
 
 protected:
 	const std::shared_ptr<IType> m_type;
-};
+};*/
 
 class INumerableElement : public virtual IElement
 {
@@ -71,6 +54,11 @@ public:
 		: m_id(id)
 	{}
 
+	unsigned int GetLocalId() const
+	{
+		return m_id.GetLocalId();
+	}
+
 protected:
 	const Id m_id;
 };
@@ -78,10 +66,10 @@ protected:
 class IVisibleElement : public virtual IElement
 {
 public:
-	IVisibleElement(Visibility visibility)
+	IVisibleElement(VisibilityType visibility)
 		: m_visibility(visibility)
 	{}
 
 protected:
-	const Visibility m_visibility;
+	const VisibilityType m_visibility;
 };

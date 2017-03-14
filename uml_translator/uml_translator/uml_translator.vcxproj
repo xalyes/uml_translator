@@ -56,6 +56,7 @@
       </PrecompiledHeaderOutputFile>
       <AdditionalIncludeDirectories>C:\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,6 +77,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -86,16 +88,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="edge.cpp" />
+    <ClCompile Include="graph_constructor.cpp" />
+    <ClCompile Include="id.cpp" />
+    <ClCompile Include="interfaces.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graph_constructor.h" />
     <ClInclude Include="edge.h" />
     <ClInclude Include="interfaces.h" />
     <ClInclude Include="id.h" />
     <ClInclude Include="node.h" />
-    <ClInclude Include="package.h" />
-    <ClInclude Include="packaged_element.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="uml_enums.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

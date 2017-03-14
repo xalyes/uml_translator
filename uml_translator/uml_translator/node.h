@@ -2,7 +2,7 @@
 
 #include "interfaces.h"
 
-class NodeType : public IType
+/*class NodeType : public IType
 {
 private:
 	enum
@@ -41,23 +41,31 @@ public:
 		else
 			return "";
 	}
-};
+};*/
 
-class Node : public INumerableElement, public ITypedElement, public IVisibleElement
+class Node : public INumerableElement, public IVisibleElement
 {
 public:
-	Node(const std::string& id, const NodeType& type, Visibility visibility)
-		: INumerableElement(id), ITypedElement(std::make_shared<NodeType>(type)), IVisibleElement(visibility)
+	Node(const std::string& id, NodeType type, VisibilityType visibility)
+		: INumerableElement(id), m_type(type), IVisibleElement(visibility)
 	{}
 
 	const std::string ToString() const
 	{
 		return
 			"Node:\n"
-			"\t" + m_type->ToString() +
-			"\t" + m_id.ToString() +
-			"\t" + GetVisibilityString(m_visibility);
+			"\t" + m_type.ToString() +
+			"\t" + m_id.ToString();
+			/*"\t" + GetVisibilityString(m_visibility);*/
 	}
+
+	const NodeType GetType() const
+	{
+		return m_type;
+	}
+
+private:
+	const NodeType m_type;
 };
 
 class Incoming : public IElement
@@ -94,7 +102,7 @@ private:
 	const Id m_ref;
 };
 
-class EffectType : public IType
+/*class EffectType : public IType
 {
 private:
 	enum
@@ -118,24 +126,30 @@ public:
 		else
 			return "";
 	}
-};
+};*/
 
-class Effect : public INumerableElement, public ITypedElement
+class Effect : public INumerableElement
 {
 public:
 	Effect(const std::string& id, EffectType type, const std::string& body)
-		: INumerableElement(id), ITypedElement(std::make_shared<IType>(type)), m_body(body)
+		: INumerableElement(id), m_type(type), m_body(body)
 	{}
 
 	const std::string ToString() const
 	{
 		return
 			"Effect:\n"
-			"\t" + m_type->ToString() +
+			/*"\t" + m_type->ToString() +*/
 			"\t" + m_id.ToString() +
-			"\t" + m_body;
+			"\tBody: " + m_body;
+	}
+
+	const EffectType GetType() const
+	{
+		return m_type;
 	}
 
 private:
+	const EffectType m_type;
 	const std::string m_body;
 };

@@ -1,21 +1,9 @@
 #include "StdAfx.h"
-#include "packaged_element.h"
 #include "node.h"
 #include "edge.h"
+#include "graph_constructor.h"
 
 using boost::property_tree::ptree;
-
-Visibility GetVisibility(const std::string& visibility)
-{
-	if (visibility == "public")
-		return Public;
-	else if (visibility == "private")
-		return Private;
-	else if (visibility == "protected")
-		return Protected;
-	else
-		throw(new std::runtime_error("Bad visibility"));
-}
 
 class Parser
 {
@@ -23,64 +11,66 @@ public:
 	Parser(const boost::property_tree::ptree& tree) : m_root(tree)
 	{}
 
-	PackagedElement Parse()
+	Activity Parse()
 	{
 		boost::property_tree::ptree PackageTree = m_root.get_child("xmi:XMI.uml:Model.packagedElement");
-		PackagedElement Package = FillPackage(PackageTree);
-		std::cout << Package.ToString();
 
 		// iterate all diagram
 		BOOST_FOREACH(const ptree::value_type& diagramTree, PackageTree.get_child(""))
 		{
 			if (diagramTree.first != "<xmlattr>")
 			{
-				PackagedElement diagram = FillPackage(diagramTree.second);
-				std::cout << diagram.ToString();
-
 				// iterate nodes or edges
 				BOOST_FOREACH(const ptree::value_type& elem, diagramTree.second.get_child(""))
 				{
 					if (elem.first != "<xmlattr>")
 					{
 						if (elem.first == "node")
-							diagram.AddChild(std::make_shared<Node>(FillNode(elem.second)));
+						{
+							Node node = FillNode(elem.second);
+							m_nodes.push_back(node);
+						}
 						else if (elem.first == "edge")
-							diagram.AddChild(std::make_shared<Edge>(FillEdge(elem.second)));
+						{
+							Edge edge = FillEdge(elem.second);
+							m_edges.push_back(edge);
+						}
 						else
 							throw(new std::runtime_error("Element " + elem.first + " is not supported. Please call me (no)"));
 					}
 				}
-
-				Package.AddChild(std::make_shared<PackagedElement>(diagram));
 			}
 		}
 
-		return Package;
+		return GetActivity();
+	}
+
+	std::vector<Node> GetNodes()
+	{
+		return m_nodes;
+	}
+
+	std::vector<Edge> GetEdges()
+	{
+		return m_edges;
+	}
+
+	Activity GetActivity()
+	{
+		static Activity activity = std::make_tuple(m_nodes, m_edges);
+		return activity;
 	}
 
 private:
-	PackagedElement FillPackage(const ptree& pt)
-	{
-		const std::string Id = pt.get<std::string>("<xmlattr>.xmi:id");
-		const std::string StrType = pt.get<std::string>("<xmlattr>.xmi:type");
-		const std::string StrVisibility = pt.get<std::string>("<xmlattr>.visibility");
-		const std::string Name = pt.get<std::string>("<xmlattr>.name");
-
-		const PackagedElementTypeClass Type(StrType);
-		const Visibility visibility = GetVisibility(StrVisibility);
-
-		return PackagedElement(Id, Type, visibility, Name);
-	}
-
 	Node FillNode(const ptree& pt)
 	{
 		const std::string Id = pt.get<std::string>("<xmlattr>.xmi:id");
 		const std::string StrType = pt.get<std::string>("<xmlattr>.xmi:type");
 		const std::string StrVisibility = pt.get<std::string>("<xmlattr>.visibility");
-
+		std::cout << StrType;
 		const NodeType Type(StrType);
 
-		const Visibility visibility = GetVisibility(StrVisibility);
+		const VisibilityType visibility(StrVisibility);
 
 		Node node(Id, Type, visibility);
 		std::cout << node.ToString();
@@ -98,7 +88,9 @@ private:
 					const std::string StrType = elem.second.get<std::string>("<xmlattr>.xmi:type");
 					const std::string Id = elem.second.get<std::string>("<xmlattr>.xmi:id");
 					const std::string Body = elem.second.get<std::string>("<xmlattr>.body");
-					node.AddChild(std::make_shared<Effect>(Effect(Id, EffectType(StrType), Body)));
+					Effect effect = Effect(Id, EffectType(StrType), Body);
+					std::cout << effect.ToString();
+					node.AddChild(std::make_shared<Effect>(effect));
 				}
 				else
 					throw(new std::runtime_error("Element " + elem.first + " is not supported. Please call me (no)"));
@@ -118,7 +110,7 @@ private:
 
 		const EdgeType Type(StrType);
 
-		const Visibility visibility = GetVisibility(StrVisibility);
+		const VisibilityType visibility(StrVisibility);
 
 		Edge edge = Edge(Id, Type, visibility, Source, Target);
 		std::cout << edge.ToString();
@@ -138,6 +130,8 @@ private:
 	}
 
 	boost::property_tree::ptree m_root;
+	std::vector<Node> m_nodes;
+	std::vector<Edge> m_edges;
 };
 
 int main(void)  
@@ -147,11 +141,9 @@ int main(void)
 	read_xml(input, pt);
 
 	Parser parser(pt);
-	const PackagedElement package = parser.Parse();
+	const Activity ActivityDiagram = parser.Parse();
 
-	std::cout << "===========" << std::endl;
-	const std::vector<std::shared_ptr<IElement> > elements = package.GetChilds();
-	std::cout << elements[0]->ToString() << std::endl;
+	GraphConstructor graphConstructor(ActivityDiagram);
 
 	return 0; 
 }
