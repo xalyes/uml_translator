@@ -80,9 +80,9 @@ private:
 			if (elem.first != "<xmlattr>")
 			{
 				if (elem.first == "incoming")
-					node.AddChild(std::make_shared<Incoming>(Incoming(elem.second.get<std::string>("<xmlattr>.xmi:idref"))));
+					node.AddIncoming(Incoming(elem.second.get<std::string>("<xmlattr>.xmi:idref")));
 				else if (elem.first == "outgoing")
-					node.AddChild(std::make_shared<Outgoing>(Outgoing(elem.second.get<std::string>("<xmlattr>.xmi:idref"))));
+					node.AddOutgoing(Outgoing(elem.second.get<std::string>("<xmlattr>.xmi:idref")));
 				else if (elem.first == "effect")
 				{
 					const std::string StrType = elem.second.get<std::string>("<xmlattr>.xmi:type");
@@ -90,7 +90,7 @@ private:
 					const std::string Body = elem.second.get<std::string>("<xmlattr>.body");
 					Effect effect = Effect(Id, EffectType(StrType), Body);
 					std::cout << effect.ToString();
-					node.AddChild(std::make_shared<Effect>(effect));
+					node.AddEffect(effect);
 				}
 				else
 					throw(new std::runtime_error("Element " + elem.first + " is not supported. Please call me (no)"));
@@ -115,15 +115,15 @@ private:
 		Edge edge = Edge(Id, Type, visibility, Source, Target);
 		std::cout << edge.ToString();
 
-		const boost::optional<std::string> GuardId = pt.get_optional<std::string>("guard.xmi:id");
+		const boost::optional<std::string> GuardId = pt.get_optional<std::string>("guard.<xmlattr>.xmi:id");
 
-		const boost::optional<std::string> Body = pt.get_optional<std::string>("guard.body");
+		const boost::optional<std::string> Body = pt.get_optional<std::string>("guard.<xmlattr>.body");
 
-		const boost::optional<std::string> GuardStrType = pt.get_optional<std::string>("guard.xmi:type");
+		const boost::optional<std::string> GuardStrType = pt.get_optional<std::string>("guard.<xmlattr>.xmi:type");
 		if (GuardStrType.is_initialized())
 		{
 			const GuardType guardType(GuardStrType.get());
-			edge.AddChild(std::make_shared<Guard>(Guard(GuardId.get(), guardType, Body.get())));
+			edge.AddGuard(Guard(GuardId.get(), guardType, Body.get()));
 		}
 
 		return edge;

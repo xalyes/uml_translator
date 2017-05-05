@@ -1,6 +1,11 @@
 #include "StdAfx.h"
 #include "edge.h"
 
+void Edge::AddGuard(const Guard& guard)
+{
+	m_guards.push_back(guard);
+}
+
 const std::string Edge::ToString() const
 {
 	return
@@ -33,5 +38,5 @@ const std::string Guard::ToString() const
 		"Guard:\n"
 		"\t" + m_type.ToString() +
 		"\t" + m_id.ToString() +
-		"\t" + m_body;
+		"\t" + GetBody();
 }

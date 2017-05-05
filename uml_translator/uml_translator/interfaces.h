@@ -15,7 +15,7 @@ public:
 	};
 };*/
 
-class IElement
+/*class IElement
 {
 public:
 	IElement() {}
@@ -34,7 +34,7 @@ public:
 
 private:
 	std::vector<std::shared_ptr<IElement> > m_childs;
-};
+};*/
 
 /*class ITypedElement : public virtual IElement
 {
@@ -47,7 +47,7 @@ protected:
 	const std::shared_ptr<IType> m_type;
 };*/
 
-class INumerableElement : public virtual IElement
+class INumerableElement //: public virtual IElement
 {
 public:
 	INumerableElement(const std::string& id)
@@ -63,7 +63,7 @@ protected:
 	const Id m_id;
 };
 
-class IVisibleElement : public virtual IElement
+class IVisibleElement //: public virtual IElement
 {
 public:
 	IVisibleElement(VisibilityType visibility)
