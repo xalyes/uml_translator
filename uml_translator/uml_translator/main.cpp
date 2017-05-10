@@ -3,6 +3,8 @@
 #include "edge.h"
 #include "graph_constructor.h"
 
+#include "boost/program_options.hpp"
+
 using boost::property_tree::ptree;
 
 class Parser
@@ -134,16 +136,61 @@ private:
 	std::vector<Edge> m_edges;
 };
 
-int main(void)  
+int main(int argc, char** argv)
 {
-	ptree pt;
-	std::ifstream input("fact.xml");
-	read_xml(input, pt);
+	std::cout << "UML translator App" << std::endl;
+	try
+	{
+		/** Define and parse the program options*/
 
-	Parser parser(pt);
-	const Activity ActivityDiagram = parser.Parse();
+		namespace po = boost::program_options;
+		po::options_description desc("Options");
+		desc.add_options()
+			("help,h", "Print help messages")
+			("path,p", po::value<std::string>()->required(), "path to XMI-file");
 
-	GraphConstructor graphConstructor(ActivityDiagram);
+		po::variables_map vm;
+		try
+		{
+			po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
+
+			/* --help option*/
+			if (vm.count("help"))
+			{
+				std::cout << desc << std::endl;
+				return 0;
+			}
+
+			po::notify(vm); // throws on error, so do after help in case 
+							// there are any problems 
+		}
+		catch (po::error& e)
+		{
+			std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+			std::cerr << desc << std::endl;
+			return -1;
+		}
+
+		if (vm.count("path"))
+		{
+			ptree pt;
+			std::ifstream input(vm["path"].as<std::string>());
+			read_xml(input, pt);
+
+			Parser parser(pt);
+			const Activity ActivityDiagram = parser.Parse();
+
+			GraphConstructor graphConstructor(ActivityDiagram);
+			std::cin.ignore();
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Unhandled Exception reached the top of main: "
+			<< e.what() << ", application will now exit" << std::endl;
+		return -2;
+
+	}
 
 	return 0; 
 }
